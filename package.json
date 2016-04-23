@@ -1,0 +1,12 @@
+{
+  "name": "events",
+  "version": "0.0.1",
+  "description": "mini events",
+  "author": "4apaev",
+  "repository": "git",
+  "main": "vent.js",
+  "scripts": {
+    "test"  : "~/.node/bin/mocha --es_staging --harmony_default_parameters --harmony_rest_parameters test.js"
+  }
+
+}
