@@ -2,11 +2,14 @@
   "name": "vent",
   "version": "0.0.1",
   "description": "mini events",
+  "engines": { "node": "6.x"},
   "author": "4apaev",
-  "repository": "git",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:4apaev/vent.git"
+  },
   "main": "vent.js",
   "scripts": {
-    "test"  : "~/.node/bin/mocha --es_staging --harmony_default_parameters --harmony_rest_parameters test.js"
+    "test"  : "~/.node/bin/mocha test.js"
   }
-
 }
