@@ -29,6 +29,18 @@ describe('Vent:constructor', () => {
 describe('Vent:on', () => {
   it('should not throw when called with a string and a function', run('on', vent({}), 'ping', log))
   it('should not throw when called with a string, a function and an object', run('on', vent({}), 'ping', log, {}))
+  it('should not duplicate handlers', () => {
+
+    let ev = vent({})
+    let n = 0
+    let duplicated = () => n+=1
+
+    ev.on('a', duplicated)
+      .on('a', duplicated)
+
+    ev.emit('a')
+    assert.equal(1, n)
+  })
 })
 
 describe('Vent:off', () => {
