@@ -5,7 +5,13 @@ function vent(obj, $ = Object.create(null)) {
   return define(obj,
 
       function on(e, cb, ctx) {
-          e.match(/\S+/g).forEach(x => ($[x]||($[x]=[])).push({ cb, ctx }))
+          let name, names = e.match(/\S+/g);
+          for (let i = 0; i < names.length; i++) {
+            if($[name = names[i]])
+              !$[name].some(x => x.cb === cb && x.ctx === ctx) && $[name].push({ cb, ctx })
+            else
+              $[name] = [{ cb, ctx }]
+          }
           return this;
         },
 
