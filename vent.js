@@ -13,7 +13,7 @@ module.exports = class Vent {
     }
 
   once(e, cb, ctx) {
-      let fn = (e, ...argv) => {
+      let fn = (...argv) => {
         cb.apply(ctx, argv);
         this.off(e, fn);
       }
