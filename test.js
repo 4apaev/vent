@@ -2,7 +2,8 @@
 
 let log = console.log.bind(console)
 let assert = require('assert')
-let vent = require('./vent')
+let Vent = require('./vent')
+
 
 let noop = assert.fail.bind(assert, 1, 0, 'must not be invoked')
 let yep = cb => cb()
@@ -18,7 +19,7 @@ function run(method, x, ...args) {
 }
 
 describe('Vent:constructor', () => {
-  let ev = vent({});
+  let ev = new Vent;
   it('should return vents object',   () => assert.equal('object',   typeof ev));
   it('emit should be an function',   () => assert.equal('function', typeof ev.emit));
   it('off should be an function',    () => assert.equal('function', typeof ev.off));
@@ -27,11 +28,11 @@ describe('Vent:constructor', () => {
 })
 
 describe('Vent:on', () => {
-  it('should not throw when called with a string and a function', run('on', vent({}), 'ping', log))
-  it('should not throw when called with a string, a function and an object', run('on', vent({}), 'ping', log, {}))
+  it('should not throw when called with a string and a function', run('on', new Vent, 'ping', log))
+  it('should not throw when called with a string, a function and an object', run('on', new Vent, 'ping', log, {}))
   it('should not duplicate handlers', () => {
 
-    let ev = vent({})
+    let ev = new Vent
     let n = 0
     let duplicated = () => n+=1
 
@@ -44,7 +45,7 @@ describe('Vent:on', () => {
 })
 
 describe('Vent:off', () => {
-  let ev = vent({});
+  let ev = new Vent;
   ev.on('ping', log);
   it('should not throw when called with not registered event',    run('off', ev, 'kong'));
   it('should not throw when called with not registered function', run('off', ev, 'ping', noop));
@@ -52,7 +53,7 @@ describe('Vent:off', () => {
 })
 
 describe('Vent:emit', () => {
-  let ev = vent({})
+  let ev = new Vent
   beforeEach(() => ev.off());
 
   it('should emit ping event and invoke callback', done => ev.on('ping', yep).emit('ping',done))
@@ -71,7 +72,7 @@ describe('Vent:emit', () => {
 })
 
 describe('Vent:once', () => {
-  let ev = vent({})
+  let ev = new Vent
   it('should invoke once', () => {
     let i = 0
     ev.once('ping', () => i +=1 ).emit('ping').emit('ping');
@@ -85,24 +86,5 @@ describe('Vent:once', () => {
       i +=1
     }, cx).emit('ping').emit('ping');
     assert.equal(i, 1)
-  })
-})
-
-
-describe('Vent:on multi', () => {
-  let ev = vent({}), expected = 0;
-  it('should add multiple events', () => {
-    ev.on('ping pong', () => expected+=1).emit('ping').emit('pong');
-    assert.equal(expected, 2);
-  })
-})
-
-describe('Vent:off multi', () => {
-  let ev = vent({}), expected = 0;
-  it('should add multiple events', () => {
-    ev.on('ping pong bong', () => expected+=1).emit('ping').emit('pong');
-    assert.equal(expected, 2);
-    ev.off('ping pong').emit('ping').emit('pong').emit('bong');
-    assert.equal(expected, 3)
   })
 })
