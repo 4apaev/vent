@@ -16,7 +16,10 @@ function vent(obj, $ = Object.create(null)) {
         },
 
     function once(e, cb, ctx) {
-        let fn = (e, ...argv) => { cb.apply(ctx, argv); this.off(e, fn); }
+        let fn = (...argv) => {
+          cb.apply(ctx, argv);
+          this.off(e, fn);
+        }
         return this.on(e, fn, this);
       },
 
