@@ -1,0 +1,30 @@
+{
+  "maxerr":        30,
+  "browserify":    true,
+  "strict":        true,
+  "latedef":       "nofunc",
+  "module":        true,
+  "node":          true,
+  "noarg":         true,
+  "unused":        "vars",
+  "laxcomma":      true,
+  "esnext":        true,
+  "boss":          true,
+  "indent":        2,
+  "quotmark":      true,
+  "lastsemic":     true,
+  "devel":         true,
+  "maxdepth":      3,
+  "browser":       true,
+  "expr":          true,
+  "maxparams":     4,
+  "undef":         true,
+  "maxcomplexity": 3,
+  "esversion":     6,
+  "asi":           true,
+  "nonew":         true,
+  "forin":         true,
+  "global":        [ "console",  "module",  "exports",  "window"]
+}
+
+
