@@ -1,56 +1,52 @@
 'use strict';
+const E = Symbol('events');
+const methods = 'on,once,off,emit'.split(',');
 
-class Vent {
-  constructor() {}
-
-  on(e, cb, ctx) {
-    this.vents||defineVents(this);
-    if(this.vents[e])
-      !this.vents[e].some(entry => entry.cb === cb && entry.ctx === ctx) && this.vents[e].push({ cb, ctx })
+module.exports = class Vent {
+  on(e, cb, ctx, vents = this[E] || def(this)[E]) {
+    if(e in vents)
+      !vents[e].some(x => x.cb === cb && x.ctx === ctx) && vents[e].push({ cb, ctx });
     else
-      this.vents[e] = [{ cb, ctx }]
+      vents[e] = [{ cb, ctx }];
     return this;
   }
 
   once(e, cb, ctx) {
-    let fn = (...argv) => {
-      cb.apply(ctx, argv); this.off(e, fn);
-    }
+    let fn = (...argv) => { cb.apply(ctx, argv), this.off(e, fn); };
     return this.on(e, fn, this);
   }
 
   emit(e, ...argv) {
-    this.vents && this.vents[e] && this.vents[e].forEach(x => x.cb.apply(x.ctx, argv));
+    this[E] && e in this[E] && this[E][e].forEach(x => x.cb.apply(x.ctx, argv));
     return this;
   }
 
-  off(e, cb, arr) {
-    if (this.vents) {
-      if(e) {
-        if('function'==typeof e)
-          cb = e, arr = Object.keys(this.vents)
-        else
-          arr = [e]
-        arr.forEach(cb
-          ? name => name in this.vents && remove(this.vents[name], cb)
-          : name => delete this.vents[name]);
-      } else {
-        defineVents(this)
-      }}
+  off(e, cb, arr, vents=this[E]) {
+    if (!vents||!e) return vents ? def(this) : this;
+    if('function'==typeof e)
+      cb = e, arr = Object.keys(vents);
+    else
+      arr = [e];
+    arr.forEach(cb ? e => e in vents && drop(vents[e], cb) : e => delete vents[e]);
     return this
   }
-}
 
-module.exports = Vent;
+  static get store() {
+    return ctx => ctx[E]
+  }
 
-function remove(list, cb) {
-  let i = -1, n = list.length
-  while (++i < n) {
-    if(cb === list[i].cb) {
-      list.splice(i, 1);
-      n--;
-    }}}
+  static extend(ctx) {
+    methods.forEach(name => Object.defineProperty(ctx, name, Object.getOwnPropertyDescriptor(Vent.prototype, name)));
+    return ctx
+  }
+};
 
-function defineVents(obj) {
-    return Object.defineProperty(obj, 'vents', { value: Object.create(null), configurable: !0, writable: !0 })
+function drop(chanel, cb, i = -1) {
+    while(++i < chanel.length)
+      cb === chanel[i].cb && chanel.splice(i, 1) && i--;
+  }
+
+function def(ctx) {
+    Object.defineProperty(ctx, E, { value: Object.create(null), configurable: !0, writable: !0 });
+    return ctx
   }

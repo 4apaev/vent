@@ -8,6 +8,9 @@
     "type": "git",
     "url": "git@github.com:4apaev/vent.git"
   },
+  "devDependencies": {
+    "is": "git@github.com:4apaev/is.git#assert"
+  },
   "main": "vent.js",
   "scripts": {
     "test"  : "mocha test.js"
