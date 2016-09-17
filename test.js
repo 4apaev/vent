@@ -3,7 +3,7 @@
 let log = console.log.bind(console)
 let is = require('is')
 let assert = require('assert')
-let Vent = require('./vent')
+let Vent = require('./_vent')
 let methods = 'on,once,off,emit'.split(',');
 
 let fail = assert.fail.bind(assert, 1, 0, 'fail: must not be invoked')
@@ -56,24 +56,24 @@ describe('Vent:off', () => {
  it('should not throw when called with a string and a function', run('off', ev, 'ping', log));
 })
 
-describe('Vent:get store', () => {
-  let getter, vents, ev = new Vent;
-  ev.on('ping', log)
-
-  it('should create event getter', () => {
-    is.func.assert(getter = Vent.store)
-  });
-
-  it('should return event object', () => {
-    is.Obj.assert(vents = getter(ev))
-  });
-
-  it('should contain ping chanel', () => {
-    is.own.assert(vents,'ping')
-    is.arr.assert(vents.ping)
-  });
-})
-
+//describe('Vent:get store', () => {
+//  let getter, vents, ev = new Vent;
+//  ev.on('ping', log)
+//
+//  it('should create event getter', () => {
+//    is.func.assert(getter = Vent.store)
+//  });
+//
+//  it('should return event object', () => {
+//    is.Obj.assert(vents = getter(ev))
+//  });
+//
+//  it('should contain ping chanel', () => {
+//    is.own.assert(vents,'ping')
+//    is.arr.assert(vents.ping)
+//  });
+//})
+//
 
 describe('Vent:emit', () => {
   let ev = new Vent
