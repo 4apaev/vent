@@ -3,7 +3,7 @@
 let log = console.log.bind(console)
 let is = require('is')
 let assert = require('assert')
-let Vent = require('./_vent')
+let Vent = require('./vent')
 let methods = 'on,once,off,emit'.split(',');
 
 let fail = assert.fail.bind(assert, 1, 0, 'fail: must not be invoked')
