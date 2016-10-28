@@ -1,12 +1,11 @@
 'use strict';
 
-const E = Symbol('events');
-const { keys, create, defineProperty, getOwnPropertyDescriptor } = Object;
+const isEmpty = x => { for(let k in x) return !1; return !0; };
+const STORE = new Map;
 
 module.exports = class Vent {
   on(e, cb, ctx) {
-    let vents = this[E]||(this[E]=create(null));
-
+    let vents = STORE.get(this) || STORE.set(this, Object.create(null)).get(this);
     if (e in vents)
       !vents[e].some(x => x.cb === cb && x.ctx === ctx) && vents[e].push({ cb, ctx });
     else
@@ -15,44 +14,45 @@ module.exports = class Vent {
   }
 
   once(e, cb, ctx) {
-    let fn = (...argv) => { cb.apply(ctx, argv), this.off(e, fn); };
-    return this.on(e, fn, this);
+    let fn = (...argv) => { cb.call(ctx, ...argv), this.off(e, fn); };
+    return this.on(e, fn);
   }
 
   emit(e, ...argv) {
-    let vents = this[E];
-    vents && e in vents && vents[e].forEach(x => x.cb.apply(x.ctx, argv));
+    let vents = STORE.get(this);
+    vents && e in vents && vents[e].forEach(x => x.cb.call(x.ctx, ...argv));
     return this;
   }
 
   off(e, cb) {
-    let arr, vents=this[E];
-
-    if (!vents||!e) {
-      vents && (this[E]=create(null));
-      return this;
-    }
+    let arr, vents = STORE.get(this);
+    if (!vents||!e)
+      return STORE.delete(this), this;
 
     if('function'==typeof e)
-      cb = e, arr = keys(vents);
+      cb = e, arr = Object.keys(vents);
+    else if (e in vents)
+      arr = [ e ];
     else
-      arr = [e];
+      return this;
 
-    let handler = cb
-      ? e => e in vents && Vent.drop(vents[e], cb)
-      : e => delete vents[e];
+    arr.forEach(cb ? k => {
+      let i = -1, chanel=vents[k];
+      while(++i < chanel.length)
+        cb === chanel[i].cb && chanel.splice(i, 1) && i--;
+      isEmpty(chanel) && delete vents[k];
+    } : k => delete vents[k]);
 
-    arr.forEach(handler);
-    return this
-  }
-
-  static drop(chanel, cb, i = -1) {
-    while(++i < chanel.length)
-      cb === chanel[i].cb && chanel.splice(i, 1) && i--;
+    isEmpty(vents) && STORE.delete(this);
+    return this;
   }
 
   static extend(o) {
-    'on,once,off,emit'.split(',').forEach(name => defineProperty(o, name, getOwnPropertyDescriptor(Vent.prototype, name)));
-    return o
+    [ 'on','once','off','emit' ].forEach(name => Object.defineProperty(o, name, Object.getOwnPropertyDescriptor(Vent.prototype, name)));
+    return o;
+  }
+
+  static getEventStore(o) {
+    return o ? STORE.get(o) : STORE;
   }
 };
