@@ -28,7 +28,7 @@ describe('Vent:constructor', () => {
   it('emit should be an function',   () => is.func.assert(ev.emit))
   it('off should be an function',    () => is.func.assert(ev.off))
   it('on should be an function',     () => is.func.assert(ev.on))
-  it('on should be once function',   () => is.func.assert(ev.once))
+  it('once should be an function',   () => is.func.assert(ev.once))
 })
 
 describe('Vent:on', () => {
@@ -42,38 +42,139 @@ describe('Vent:on', () => {
 
     ev.on('a', duplicated)
       .on('a', duplicated)
-
-    ev.emit('a')
+      .emit('a')
     assert.equal(1, n)
   })
 })
 
 describe('Vent:off', () => {
- let ev = new Vent;
- ev.on('ping', log);
- it('should not throw when called with not registered event',    run('off', ev, 'kong'));
- it('should not throw when called with not registered function', run('off', ev, 'ping', noop));
- it('should not throw when called with a string and a function', run('off', ev, 'ping', log));
-})
+  let evt = new Vent;
+  evt.on('ping', log);
 
-//describe('Vent:get store', () => {
-//  let getter, vents, ev = new Vent;
-//  ev.on('ping', log)
-//
-//  it('should create event getter', () => {
-//    is.func.assert(getter = Vent.store)
-//  });
-//
-//  it('should return event object', () => {
-//    is.Obj.assert(vents = getter(ev))
-//  });
-//
-//  it('should contain ping chanel', () => {
-//    is.own.assert(vents,'ping')
-//    is.arr.assert(vents.ping)
-//  });
-//})
-//
+  it('should not throw when called with not registered event',    run('off', evt, 'kong'));
+  it('should not throw when called with not registered function', run('off', evt, 'ping', noop));
+  it('should not throw when called with a string and a function', run('off', evt, 'ping', log));
+
+
+  it('should remove specified listener for specified event', () => {
+
+    let ev = new Vent;
+    let dict = { a: 0, b: 0, c: 0 }
+
+    let a = () => dict.a+=1
+    let b = () => dict.b+=1
+    let c = () => dict.c+=1
+
+    ev
+      .on('ping', a)
+      .on('ping', b)
+      .on('ping', c)
+      .on('pong', a)
+
+    ev
+      .emit('ping')
+      .off('ping', a)
+      .emit('ping');
+
+    assert.equal(1, dict.a)
+    assert.equal(2, dict.b)
+    assert.equal(2, dict.c)
+
+
+    ev.emit('pong');
+    assert.equal(2, dict.a)
+  });
+
+  it('should remove specified listener for all events', () => {
+
+
+    let a=0, b=0, c=0, ev = new Vent;
+
+    let fa = () => a+=1
+    let fb = () => b+=1
+    let fc = () => c+=1
+
+    ev
+      .on('ping', fa)
+      .on('ping', fb)
+      .on('ping', fc)
+
+      .on('pong', fa)
+      .on('pong', fb)
+
+      .emit('ping')
+      .emit('pong');
+
+    assert.equal(2, a)
+    assert.equal(2, b)
+    assert.equal(1, c)
+
+    ev
+      .off(fa)
+      .emit('ping')
+      .emit('pong');
+
+    assert.equal(2, a)
+    assert.equal(4, b)
+    assert.equal(2, c)
+
+  });
+
+  it('should remove all listeners', () => {
+    let a=0, b=0, ev = new Vent;
+    let fa = () => a+=1
+    let fb = () => b+=1
+
+    ev
+      .on('ping', fa)
+      .on('ping', fb)
+
+      .on('pong', fa)
+      .on('pong', fb)
+
+      .emit('ping')
+      .emit('pong');
+
+    assert.equal(2, a)
+    assert.equal(2, b)
+
+    ev
+      .off()
+      .emit('ping')
+      .emit('pong');
+
+    assert.equal(2, a)
+    assert.equal(2, b)
+
+  });
+
+  it('should remove all listeners for specified event', () => {
+
+    let a=0, b=0, c=0, ev = new Vent;
+    ev
+      .on('ping', () => a+=1)
+      .on('ping', () => b+=1)
+      .on('pong', () => c+=1)
+
+      .emit('ping')
+      .emit('pong');
+
+    assert.equal(1, a)
+    assert.equal(1, b)
+    assert.equal(1, c)
+
+    ev
+      .off('ping')
+
+      .emit('ping')
+      .emit('pong');
+
+    assert.equal(1, a)
+    assert.equal(1, b)
+    assert.equal(2, c);
+
+  });
+});
 
 describe('Vent:emit', () => {
   let ev = new Vent
