@@ -47,6 +47,20 @@ describe('Vent:on', () => {
   })
 })
 
+
+describe('Vent:on:multiple', () => {
+
+  it('should not duplicate handlers', () => {
+    let ev = new Vent, n = 0, duplicated = () => n+=1;
+
+    ev.on('ping,pong', duplicated)
+      .on('ping,pong', duplicated)
+      .emit('ping,pong');
+
+    assert.equal(2, n)
+  })
+})
+
 describe('Vent:off', () => {
   let evt = new Vent;
   evt.on('ping', log);
@@ -176,6 +190,101 @@ describe('Vent:off', () => {
   });
 });
 
+describe('Vent:off:multiple', () => {
+  it('should remove specified listener for specified event', () => {
+
+    let ev = new Vent;
+    let dict = { a: 0, b: 0, c: 0 }
+
+    let a = () => dict.a+=1
+    let b = () => dict.b+=1
+    let c = () => dict.c+=1
+
+    ev
+      .on('ping,pong', a)
+      .on('ping', b)
+      .on('ping', c)
+
+    ev
+      .emit('ping')
+      .off('ping', a)
+      .emit('ping');
+
+    assert.equal(1, dict.a)
+    assert.equal(2, dict.b)
+    assert.equal(2, dict.c)
+
+    ev.emit('pong');
+    assert.equal(2, dict.a)
+  });
+
+  it('should remove specified listener for all events', () => {
+    let a=0, b=0, c=0, ev = new Vent;
+    let fa = () => a+=1
+    let fb = () => b+=1
+    let fc = () => c+=1
+
+    ev
+      .on('ping,pong', fa)
+      .on('ping,pong', fb)
+      .on('ping', fc)
+      .emit('ping,pong')
+
+    assert.equal(2, a)
+    assert.equal(2, b)
+    assert.equal(1, c)
+
+    ev
+      .off(fa)
+      .emit('ping,pong');
+
+    assert.equal(2, a)
+    assert.equal(4, b)
+    assert.equal(2, c)
+  });
+
+  it('should remove all listeners', () => {
+    let a=0, b=0, ev = new Vent;
+    let fa = () => a+=1
+    let fb = () => b+=1
+
+    ev
+      .on('ping,pong', fa)
+      .on('ping,pong', fb)
+      .emit('ping,pong');
+
+    assert.equal(2, a)
+    assert.equal(2, b)
+
+    ev.off().emit('ping,pong');
+
+    assert.equal(2, a)
+    assert.equal(2, b)
+
+  });
+
+  it('should remove all listeners for specified event', () => {
+
+    let a=0, b=0, c=0, ev = new Vent;
+    ev
+      .on('ping', () => a+=1)
+      .on('ping', () => b+=1)
+      .on('pong', () => c+=1)
+      .emit('ping,pong');
+
+    assert.equal(1, a)
+    assert.equal(1, b)
+    assert.equal(1, c)
+
+    ev
+      .off('ping')
+      .emit('ping,pong');
+    assert.equal(1, a)
+    assert.equal(1, b)
+    assert.equal(2, c);
+
+  });
+});
 describe('Vent:emit', () => {
   let ev = new Vent
   beforeEach(() => ev.off());
@@ -219,6 +328,24 @@ describe('Vent:emit', () => {
     .off(fail)
     .emit('ping')
     .emit('bong')
+    .emit('pong', done));
+})
+
+describe('Vent:emit:multiple', () => {
+  let ev = new Vent
+  beforeEach(() => ev.off());
+
+
+  it('should invoke none', () => ev
+    .on('ping,pong', noop)
+    .off()
+    .emit('ping,pong'));
+
+  it('should remove all fails', done => ev
+    .on('pong', yep)
+    .on('ping,pong,bong', fail)
+    .off(fail)
+    .emit('ping,bong')
     .emit('pong', done));
 })
 
