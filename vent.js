@@ -1,7 +1,7 @@
 'use strict';
 
 const isEmpty = x => { for(let k in x) return !1; return !0; };
-const STORE = new Map;
+const STORE = new WeakMap;
 const SEP = ','
 
 module.exports = class Vent {
